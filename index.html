@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Launcher: Обзор кода и руководство</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        pre {
+            background-color: #f8f8f8; /* Цвет фона */
+            border: 1px solid #ddd;   /* Граница вокруг кода */
+            padding: 10px;            /* Отступ внутри элемента */
+            overflow-x: auto;         /* Прокрутка по горизонтали */
+            margin-bottom: 20px;      /* Отступ снизу */
+            border-radius: 10px;      /* Скругление углов */
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Шрифт для кода */
+            color: #333;              /* Цвет текста */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Тень для выделения */
+        }
+        
+        .code-block {
+            position: relative;
+        }
+        .copy-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(145deg, #6ab04c, #4caf50); /* Градиентный фон */
+            color: white;              /* Цвет текста */
+            border: none;              /* Удаление границы */
+            cursor: pointer;           /* Курсор при наведении */
+            border-radius: 12px;      /* Скругление углов */
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.8); /* Двусторонняя тень */
+            transition: all 0.3s ease; /* Плавный переход для всех свойств */
+            font-size: 14px;           /* Размер шрифта */
+            font-weight: bold;         /* Жирный шрифт */
+        }
+        
+        .copy-button:hover {
+            background: linear-gradient(145deg, #4caf50, #388e3c); /* Градиент при наведении */
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.2), -6px -6px 12px rgba(255, 255, 255, 0.8); /* Усиленная тень при наведении */
+        }
+        
+        .copy-button:active {
+            background: linear-gradient(145deg, #388e3c, #2c6b2f); /* Градиент при нажатии */
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3); /* Впечатанная тень при нажатии */
+        }
+        
+        nav {
+            background-color: #333;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+        }
+        
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        nav ul li {
+            margin-bottom: 10px;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+        
+        nav ul li a:hover {
+            background-color: #555;
+        }
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 10px;
+            }
+            
+            nav {
+                width: 100%;
+                height: auto;
+                position: relative;
+                box-shadow: none;
+            }
+            
+            nav ul li {
+                display: inline;
+                margin-right: 10px;
+            }
+            
+            nav ul li a {
+                display: inline-block;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#intro">Введение</a></li>
+            <li><a href="#imports">Импорты</a></li>
+            <li><a href="#class">Класс MinecraftLauncher</a></li>
+            <li><a href="#constructor">Конструктор</a></li>
+            <li><a href="#methods">Основные методы</a></li>
+            <li><a href="#main">Метод main</a></li>
+            <li><a href="#helpers">Вспомогательные методы</a></li>
+            <li><a href="#full_code">Полный код</a></li>
+            <li><a href="#build">build.gradle</a></li>
+            <li><a href="#conclusion">Заключение</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        
+        <h1 id="intro">Minecraft Launcher: Обзор кода </h1>
+
+        
+       
+        <p>В этой статье мы рассмотрим код для запуска Minecraft с использованием Java. Мы обсудим основные компоненты программы, как она работает и как можно использовать этот код для создания собственного лаунчера Minecraft.</p>
+        
+        <p>Код представляет собой простой лаунчер для Minecraft, написанный на Java с использованием библиотеки Swing для создания графического интерфейса пользователя (GUI). Лаунчер позволяет пользователю выбирать версию Minecraft для установки и запуска. Давайте разберем все классы, методы и переменные.</p>
+       
+        <h2 id="imports">Импорты</h2>
+        <p>Код начинается с импорта необходимых библиотек и пакетов. Эти библиотеки включают библиотеки Swing для создания графического интерфейса, библиотеки для работы с JSON и обработки сетевых соединений.</p>
+
+        <div class="code-block">
+            <button class="copy-button" onclick="copyToClipboard('#code1')">Копировать</button>
+            <pre id="code1">
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import javax.swing.*;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+</pre>
+
+    <h2>Импортируемые библиотеки:</h2>
+    <ul>
+    <li>com.google.gson: Для работы с JSON данными (получение списка версий Minecraft).</li>
+    <li>javax.swing: Для создания GUI.</li>
+    <li>java.awt: Для управления компоновкой и внешним видом GUI.</li>
+    <li>java.io, java.net, java.util, java.util.zip: Для работы с вводом/выводом, сетевыми операциями и ZIP-архивами.</li>
+</ul>
+        </div>
+
+        <h2 id="class">Класс <code>MinecraftLauncher</code></h2>
+        <p>Основной класс <code>MinecraftLauncher</code> наследуется от <code>JFrame</code> (основного класса для создания окна GUI в Swing).</p>
+
+        <div class="code-block">
+            <button class="copy-button" onclick="copyToClipboard('#code2')">Копировать</button>
+            <pre id="code2">public class MinecraftLauncher extends JFrame {
+                private static final String BASE_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+                private static final String JAVA_DOWNLOAD_URL = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21+35/OpenJDK21U-jdk_x64_windows_hotspot_21_35.zip";
+                private static final String MINECRAFT_PATH = System.getProperty("user.home") + "\\AppData\\Roaming\\.mine";
+                private static final String JAVA_PATH = MINECRAFT_PATH + "\\java";
+            
+                private JComboBox<String> versionComboBox;
+                private JButton launchButton;
+                private List<MinecraftLauncher.MinecraftVersion> versions;
+            
+</pre>
+<h2>Статические переменные:</h2>
+<ul>
+<li><code>BASE_URL</code>: URL для получения списка версий Minecraft.</li>
+<li><code>JAVA_DOWNLOAD_URL</code>: URL для загрузки Java Runtime Environment (JRE).</li>
+<li><code>MINECRAFT_PATH</code>: Путь к директории Minecraft в системной папке пользователя.</li>
+<li><code>JAVA_PATH</code>: Путь к установленной версии Java.</li>
+</ul>
+    <h2>Переменные экземпляра:</h2>
+    <ul>
+    <li><code>versionComboBox</code>: Выпадающий список для выбора версии Minecraft.</li>
+    <li><code>launchButton</code>: Кнопка для запуска Minecraft.</li>
+    <li><code>versions</code>: Список доступных версий Minecraft.</li>
+</ul>
+        </div>
+
+        <h2 id="constructor">Конструктор <code>MinecraftLauncher()</code></h2>
+       
+
+<div class="code-block">
+            <button class="copy-button" onclick="copyToClipboard('#code3')">Копировать</button>
+            <pre id="code3">public MinecraftLauncher() {
+                try {
+                    UIManager.setLookAndFeel(new NimbusLookAndFeel());
+                } catch (UnsupportedLookAndFeelException e) {
+                    e.printStackTrace();
+                }
+            
+                setTitle("Minecraft Launcher");
+                setSize(450, 250);
+                setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                setLocationRelativeTo(null);
+                setLayout(new BorderLayout());
+            
+                JPanel panel = new JPanel();
+                panel.setLayout(new GridBagLayout());
+                panel.setBackground(new Color(60, 63, 65));
+            
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.insets = new Insets(10, 10, 10, 10);
+            
+                JLabel titleLabel = new JLabel("Select Minecraft Version");
+                titleLabel.setForeground(new Color(187, 187, 188));
+                titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+                gbc.gridx = 0;
+                gbc.gridy = 0;
+                gbc.gridwidth = 2;
+                panel.add(titleLabel, gbc);
+            
+                versionComboBox = new JComboBox<>();
+                versionComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
+                gbc.gridx = 0;
+                gbc.gridy = 1;
+                gbc.gridwidth = 2;
+                panel.add(versionComboBox, gbc);
+            
+                launchButton = new JButton("Launch Minecraft");
+                launchButton.setFont(new Font("Arial", Font.BOLD, 14));
+                launchButton.setBackground(new Color(39, 174, 96));
+                launchButton.setForeground(Color.WHITE);
+                launchButton.setFocusPainted(false);
+                gbc.gridx = 0;
+                gbc.gridy = 2;
+                gbc.gridwidth = 2;
+                panel.add(launchButton, gbc);
+            
+                add(panel, BorderLayout.CENTER);
+            
+                loadVersions();
+                setListeners();
+            }
+            </pre>
+            <h2>Конструктор: Инициализирует интерфейс лаунчера.</h2>
+            <ul>
+            <li>Устанавливает <code>NimbusLookAndFeel</code> для современного внешнего вида.</li>
+            <li>Настраивает размеры окна, заголовок, центрирование и компоновку.</li>
+            <li>Создает основную панель <code>(JPanel)</code> с темным фоном и добавляет на нее компоненты <code>(JLabel, JComboBox, JButton)</code>.</li>
+            <li>Вызывает методы <code>loadVersions()</code> и <code>setListeners()</code> для загрузки версий Minecraft и настройки обработчиков событий.</li>
+        </ul>
+        </div>
+
+
+        <h2 id="methods">Метод  <code>setListeners()</code></h2>
+       
+
+        <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('#code3')">Копировать</button>
+                    <pre id="code3">
+                        
+                        private void setListeners() {
+                            launchButton.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    int selectedIndex = versionComboBox.getSelectedIndex();
+                                    if (selectedIndex >= 0) {
+                                        MinecraftVersion selectedVersion = versions.get(selectedIndex);
+                                        try {
+                                            downloadAndInstallVersion(selectedVersion);
+                                            launchMinecraft(selectedVersion);
+                                        } catch (IOException ex) {
+                                            ex.printStackTrace();
+                                            JOptionPane.showMessageDialog(MinecraftLauncher.this, "Failed to launch Minecraft", "Error", JOptionPane.ERROR_MESSAGE);
+                                        }
+                                    } else {
+                                        JOptionPane.showMessageDialog(MinecraftLauncher.this, "Please select a version", "Warning", JOptionPane.WARNING_MESSAGE);
+                                    }
+                                }
+                            });
+                        }
+                    </pre>
+                    <h2>Метод <code>loadVersions()</code>: Загружает доступные версии Minecraft и добавляет их в выпадающий список <code>versionComboBox</code>.</h2>
+                    <ul>
+                    <li>Вызывает метод <code>fetchMinecraftVersions()</code> для получения списка версий.</li>
+                    <li>Добавляет каждую версию в <code>JComboBox</code>.</li>
+                    <li>Обрабатывает исключения <code>IOException</code> при ошибке загрузки версий.</li>
+                </ul>
+                </div>
+
+
+                <h2>Метод  <code>loadVersions()</code></h2>
+
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('#code3')">Копировать</button>
+                    <pre id="code3">private void loadVersions() {
+                        try {
+                            versions = fetchMinecraftVersions();
+                            for (MinecraftVersion version : versions) {
+                                versionComboBox.addItem(version.id);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            JOptionPane.showMessageDialog(this, "Failed to load versions", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                    </pre>
+                    <h2>Метод <code>setListeners()</code>: Устанавливает обработчик событий для кнопки <code>launchButton</code>.</h2>
+                    <ul>
+                    <li>При нажатии на кнопку получает выбранную версию из <code>JComboBox</code>.</li>
+                    <li>Вызывает методы <code>downloadAndInstallVersion()</code> и <code>launchMinecraft()</code> для загрузки, установки и запуска выбранной версии Minecraft.</li>
+                    <li>Обрабатывает исключения <code>IOException</code> при ошибке установки или запуска.</li>
+                </ul>
+                </div>
+
+
+                <h2 id="main">Метод  <code>main</code></h2>
+
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('#code3')">Копировать</button>
+                    <pre id="code3">
+                        public static void main(String[] args) {
+                            SwingUtilities.invokeLater(() -> {
+                                MinecraftLauncher launcherUI = new MinecraftLauncher();
+                                launcherUI.setVisible(true);
+                            });
+                        
+                            try {
+                                ensureJavaInstalled();
+                                List<MinecraftVersion> versions = fetchMinecraftVersions();
+                                if (versions.isEmpty()) {
+                                    System.out.println("Не удалось получить список версий.");
+                                    return;
+                                }
+                        
+                                System.out.println("Доступные версии Minecraft:");
+                                for (int i = 0; i < versions.size(); i++) {
+                                    System.out.println((i + 1) + ": " + versions.get(i).id);
+                                }
+                        
+                                System.out.print("Введите номер версии для установки и запуска: ");
+                                Scanner scanner = new Scanner(System.in);
+                                int versionIndex = scanner.nextInt() - 1;
+                        
+                                if (versionIndex < 0 || versionIndex >= versions.size()) {
+                                    System.out.println("Неверный номер версии.");
+                                    return;
+                                }
+                        
+                                MinecraftVersion selectedVersion = versions.get(versionIndex);
+                                System.out.println("Вы выбрали версию: " + selectedVersion.id);
+                        
+                                downloadAndInstallVersion(selectedVersion);
+                                launchMinecraft(selectedVersion);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }                              
+                    </pre>
+                    <h2>Метод <code>main</code>: Основная точка входа программы.</h2>
+                    <ul>
+                    <li>Запускает GUI в отдельном потоке с использованием <code>SwingUtilities.invokeLater()</code>.</li>
+                    <li>Проверяет установку Java с помощью метода <code>ensureJavaInstalled()</code>.</li>
+                    <li>Загружает список версий Minecraft и запрашивает у пользователя ввод номера версии для установки и запуска.</li>
+                    <li>Вызывает методы <code>downloadAndInstallVersion()</code> и <code>launchMinecraft()</code> для выбранной версии.</li>
+                </ul>
+                </div>
+
+                <h2 id="helpers">Вспомогательные методы</h2>
+        <h3>Метод <code>ensureJavaInstalled()</code>: Загрузка и установка Java</h3>
+        <p>Если Java не установлена, программа автоматически загружает и устанавливает её в нужное место.</p>
+
+        <div class="code-block">
+            <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+            <pre id="code4">private static void ensureJavaInstalled() throws IOException {
+    File javaDir = new File(JAVA_PATH);
+    if (!javaDir.exists()) {
+        javaDir.mkdirs();
+        System.out.println("Скачиваем и устанавливаем нужную версию Java...");
+
+        File javaZip = new File(JAVA_PATH + "\\java.zip");
+        downloadFileWithProgress(JAVA_DOWNLOAD_URL, javaZip);
+
+        unzip(javaZip.getAbsolutePath(), JAVA_PATH);
+        javaZip.delete(); // Удаляем zip-файл после распаковки
+
+        System.out.println("Java успешно установлена.");
+    }
+}</pre>
+                    <h2>Метод <code>ensureJavaInstalled()</code>: Проверяет, установлена ли Java, и, если нет, скачивает и устанавливает ее.</h2>
+                    <ul>
+                    <li>Создает директорию для Java, если она не существует.</li>
+                    <li>Скачивает ZIP-архив с Java и распаковывает его.</li>
+                </ul>
+        </div>
+
+
+        <h2>Метод  <code>fetchMinecraftVersions()</code>Этот метод загружает список доступных версий Minecraft с удалённого сервера и возвращает его в виде списка объектов <code>MinecraftVersion</code>.</h2>
+        <ul>
+        <li>Возвращаемый тип: List<MinecraftVersion></li>
+        <li>Исключение: IOException — возникает при проблемах с сетью или чтением данных.</li>
+    </ul>
+        <h2>Важные переменные:</h2>
+        <ul>
+        <li>versions — список версий Minecraft.</li>
+        <li>input, reader, jsonReader — потоки для работы с входными данными.</li>
+        <li>jsonObject, versionsArray — объекты для хранения и работы с JSON-данными.</li>
+    </ul>
+        <div class="code-block">
+            <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+            <pre id="code4">private static List<MinecraftVersion> fetchMinecraftVersions() throws IOException {
+                List<MinecraftVersion> versions = new ArrayList<>();
+                try (InputStream input = new URL(BASE_URL).openStream();
+                     InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
+                     JsonReader jsonReader = new JsonReader(reader)) {
+        
+                    Gson gson = new Gson();
+                    JsonObject jsonObject = gson.fromJson(jsonReader, JsonObject.class);
+                    JsonArray versionsArray = jsonObject.getAsJsonArray("versions");
+        
+                    for (int i = 0; i < versionsArray.size(); i++) {
+                        JsonObject versionObject = versionsArray.get(i).getAsJsonObject();
+                        String id = versionObject.get("id").getAsString();
+                        String url = versionObject.get("url").getAsString();
+                        versions.add(new MinecraftVersion(id, url));
+                    }
+                }
+        
+                return versions;
+            }</pre>
+        </div>
+
+        <h2>Основные действия:</h2>
+        <ul>
+        <li>Подключается к удалённому серверу через URL.</li>
+        <li>Читает JSON-файл с данными о версиях и парсит его с помощью библиотеки Gson.</li>
+        <li>Для каждой версии Minecraft создаёт объект MinecraftVersion и добавляет его в список.</li>
+                    
+    </ul>
+
+        <h2>Метод  <code>downloadAndInstallVersion(MinecraftVersion version)</code>Этот метод скачивает и устанавливает конкретную версию Minecraft.</h2>
+        <ul><h2>Параметры</h2>
+            <ul>
+        <li>version — объект класса MinecraftVersion, представляющий конкретную версию игры.</li>
+        <li>Исключение: IOException — при проблемах с загрузкой или записью файлов.</li>
+    </ul>
+   
+
+    
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">private static void downloadAndInstallVersion(MinecraftVersion version) throws IOException {
+            String versionPath = MINECRAFT_PATH + "\\versions\\" + version.id;
+            File versionDir = new File(versionPath);
+            if (!versionDir.exists()) {
+                versionDir.mkdirs();
+            }
+    
+            String versionJsonPath = versionPath + "\\" + version.id + ".json";
+            File versionJsonFile = new File(versionJsonPath);
+            if (!versionJsonFile.exists()) {
+                downloadFileWithProgress(version.url, versionJsonFile);
+            }
+    
+            JsonObject versionJson;
+            try (Reader reader = new FileReader(versionJsonFile)) {
+                Gson gson = new Gson();
+                versionJson = gson.fromJson(reader, JsonObject.class);
+            }
+    
+            JsonObject downloads = versionJson.getAsJsonObject("downloads");
+            JsonObject client = downloads.getAsJsonObject("client");
+            if (client != null) {
+                String clientUrl = client.get("url").getAsString();
+                String clientPath = versionPath + "\\" + version.id + ".jar";
+                File clientJarFile = new File(clientPath);
+                if (!clientJarFile.exists()) {
+                    downloadFileWithProgress(clientUrl, clientJarFile);
+                }
+            }
+    
+            JsonArray libraries = versionJson.getAsJsonArray("libraries");
+            String librariesPath = versionPath + "\\libraries"; // Папка libraries теперь уникальна для каждой версии
+            for (int i = 0; i < libraries.size(); i++) {
+                JsonObject library = libraries.get(i).getAsJsonObject();
+                JsonObject downloadsObject = library.getAsJsonObject("downloads");
+                if (downloadsObject != null) {
+                    if (downloadsObject.has("artifact")) {
+                        JsonObject artifact = downloadsObject.getAsJsonObject("artifact");
+                        String libraryUrl = artifact.get("url").getAsString();
+                        String libraryFilePath = librariesPath + "\\" + artifact.get("path").getAsString();
+                        File libraryFile = new File(libraryFilePath);
+                        if (!libraryFile.exists()) {
+                            downloadFileWithProgress(libraryUrl, libraryFile);
+                        }
+                    }
+    
+                    if (downloadsObject.has("classifiers")) {
+                        JsonObject classifiers = downloadsObject.getAsJsonObject("classifiers");
+                        if (classifiers.has("natives-windows")) {
+                            String nativesClassifier = classifiers.get("natives-windows").getAsJsonObject().get("url").getAsString();
+                            String nativeFileName = nativesClassifier.substring(nativesClassifier.lastIndexOf('/') + 1);
+                            String nativesPath = versionPath + "\\natives\\" + nativeFileName;
+                            File nativesFile = new File(nativesPath);
+                            if (!nativesFile.exists()) {
+                                downloadFileWithProgress(nativesClassifier, nativesFile);
+                                unzip(nativesFile.getAbsolutePath(), versionPath + "\\natives");
+                            }
+                        }
+                    }
+                }
+            }
+    
+            System.out.println("Версия " + version.id + " успешно установлена.");
+        }</pre>
+        <h2>Основные действия:</h2>
+        <ul>
+        <li>Создаёт директории для файлов версии.</li>
+        <li>Проверяет наличие необходимых файлов и загружает их при отсутствии.</li>
+        <li>Загружает библиотеки и дополнительные файлы, если они требуются для данной версии.</li>
+        <li>Распаковывает архивы с native-библиотеками для Windows.</li>
+    </ul>
+    </div>
+    
+   
+  
+    <h2>Метод  <code>downloadFileWithProgress</code>Загружает файл с указанного URL и показывает прогресс загрузки в консоли.</h2>
+    <ul><h2>Параметры</h2>
+        <ul>
+    <li>fileURL — URL для загрузки файла.</li>
+    <li>destination — путь к файлу, куда будет сохранён загруженный файл.</li>
+    <li>Исключение: IOException — при проблемах с загрузкой или записью файла.</li>
+</ul>
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">private static void downloadFileWithProgress(String fileURL, File destination) throws IOException {
+            // Проверяем и создаем необходимые директории
+            File parentDir = destination.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs(); // Создаем все необходимые директории
+            }
+    
+            URL url = new URL(fileURL);
+            try (InputStream inputStream = url.openStream();
+                 FileOutputStream outputStream = new FileOutputStream(destination)) {
+    
+                byte[] buffer = new byte[4096];
+                long totalBytesRead = 0;
+                int bytesRead;
+                long fileSize = url.openConnection().getContentLengthLong();
+                int lastPercent = 0;
+    
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
+                    int percentCompleted = (int) ((totalBytesRead * 100) / fileSize);
+                    if (percentCompleted != lastPercent) {
+                        System.out.print("\rСкачивание: " + percentCompleted + "%");
+                        lastPercent = percentCompleted;
+                    }
+                }
+                System.out.println(); // Переход на новую строку после завершения загрузки
+            }
+        }</pre>
+        <h2>Основные действия:</h2>
+        <ul>
+        <li>Создаёт директории, если они отсутствуют.</li>
+        <li>Скачивает файл по частям, показывая прогресс в процентах.</li>
+    </ul>
+    </div>
+    
+
+    <h2>Метод  <code>unzip</code>Распаковывает архив (ZIP) в указанную директорию, отображая прогресс распаковки.</h2>
+    <h2>Параметры</h2>
+    <ul>
+    <li>zipFilePath — путь к ZIP-файлу.</li>
+    <li>destDir — директория, куда будут распакованы файлы.</li>
+    <li>Исключение: IOException — при проблемах с загрузкой или записью файла.</li>
+</ul>
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">private static void unzip(String zipFilePath, String destDir) throws IOException {
+            File dir = new File(destDir);
+            if (!dir.exists()) dir.mkdirs();
+    
+            long totalFiles = 0;
+            long filesProcessed = 0;
+    
+            try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+                ZipEntry entry = zipIn.getNextEntry();
+                while (entry != null) {
+                    if (!entry.isDirectory()) {
+                        totalFiles++;
+                    }
+                    zipIn.closeEntry();
+                    entry = zipIn.getNextEntry();
+                }
+            }
+    
+            try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+                ZipEntry entry = zipIn.getNextEntry();
+                while (entry != null) {
+                    String filePath = destDir + File.separator + entry.getName();
+                    if (!entry.isDirectory()) {
+                        extractFile(zipIn, filePath);
+                        filesProcessed++;
+                        int percentCompleted = (int) ((filesProcessed * 100) / totalFiles);
+                        System.out.print("\rРаспаковка: " + percentCompleted + "%");
+                    } else {
+                        File dirEntry = new File(filePath);
+                        dirEntry.mkdirs();
+                    }
+                    zipIn.closeEntry();
+                    entry = zipIn.getNextEntry();
+                }
+                System.out.println(); // Переход на новую строку после завершения распаковки
+            }
+        }</pre>
+        <h2>Основные действия:</h2>
+        <ul>
+        <li>Открывает ZIP-архив и считает количество файлов.</li>
+        <li>Распаковывает файлы, отображая прогресс в консоли.</li>
+    </ul>
+    </div>
+
+    <h2>Метод  <code>extractFile</code>Извлекает отдельный файл из ZIP-архива и сохраняет его на диск.</h2>
+    <h2>Параметры</h2>
+    <ul>
+    <li>zipIn — поток для чтения содержимого ZIP-архива.</li>
+    <li>filePath — путь для сохранения извлечённого файла.</li>
+    <li>Исключение: IOException — при проблемах с загрузкой или записью файла.</li>
+</ul>
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+                byte[] bytesIn = new byte[4096];
+                int read;
+                while ((read = zipIn.read(bytesIn)) != -1) {
+                    bos.write(bytesIn, 0, read);
+                }
+            }
+        }</pre>
+      
+    </div>
+    <h2>Метод  <code>launchMinecraft</code>Этот метод запускает Minecraft с использованием Java, подставляя необходимые параметры для запуска.</h2>
+    <h2>Параметры</h2>
+    <ul>
+    <li>version — объект MinecraftVersion, представляющий конкретную версию игры.</li>
+    <li>Исключение: IOException — при проблемах с загрузкой или записью файла.</li>
+</ul>
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">private static void launchMinecraft(MinecraftVersion version) throws IOException {
+            String versionPath = MINECRAFT_PATH + "\\versions\\" + version.id;
+            String javaExecutable = JAVA_PATH + "\\jdk-21+35\\bin\\java.exe"; // Путь к Java
+    
+            // Проверка существования файла java.exe
+            File javaFile = new File(javaExecutable);
+            if (!javaFile.exists() || !javaFile.isFile()) {
+                System.out.println("Java executable not found at: " + javaExecutable);
+                return;
+            }
+    
+            // Сборка classpath: добавляем все .jar из папки libraries и версии
+            StringBuilder classpath = new StringBuilder();
+            File librariesDir = new File(versionPath + "\\libraries");
+            if (librariesDir.exists() && librariesDir.isDirectory()) {
+                // Рекурсивно добавляем все jar-файлы из библиотек
+                addJarFilesToClasspath(librariesDir, classpath);
+            }
+    
+            // Добавляем jar файл самой версии Minecraft
+            classpath.append(File.pathSeparator).append(versionPath).append("\\").append(version.id).append(".jar");
+    
+            System.out.println("Запуск Minecraft...");
+    
+            List<String> command = new ArrayList<>();
+            command.add(javaExecutable);
+            command.add("-cp");
+            command.add(classpath.toString());
+            command.add("-Djava.library.path=" + versionPath + "\\natives");
+            command.add("net.minecraft.client.main.Main");
+            command.add("--username");
+            command.add("MailoDesx");
+            command.add("--version");
+            command.add(version.id);
+            command.add("--gameDir");
+            command.add(MINECRAFT_PATH);
+            command.add("--assetsDir");
+            command.add(MINECRAFT_PATH + "\\assets");
+            command.add("--assetIndex");
+            command.add(version.id);
+            command.add("--uuid");
+            command.add("1234567890abcdef1234567890abcdef");
+            command.add("--accessToken");
+            command.add("access_token");
+            command.add("--userProperties");
+            command.add("{}");
+    
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
+            processBuilder.redirectErrorStream(true);
+    
+            // Запуск процесса
+            Process process = processBuilder.start();
+            System.out.println("Minecraft запущен!");
+    
+            // Чтение вывода процесса
+            new Thread(() -> {
+                try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }</pre>
+        <h2>Основные действия:</h2>
+        <ul>
+        <li>Проверяет наличие исполняемого файла java.exe.</li>
+        <li>Собирает classpath, включая все библиотеки и jar-файл Minecraft.</li>
+        <li>Формирует команду для запуска Minecraft и выполняет её с помощью ProcessBuilder.</li>
+        <li>Запускает поток для вывода сообщений из процесса.</li>
+    </ul>      
+    </div>
+
+    <h2>Метод  <code>addJarFilesToClasspath</code>Этот метод рекурсивно добавляет все JAR-файлы из указанной директории в classpath.</h2>
+    <h2>Параметры</h2>
+    <ul>
+    <li>dir — директория, в которой находятся JAR-файлы.</li>
+    <li>classpath — строка, представляющая classpath, в которую добавляются пути к JAR-файлам.</li>
+</ul>
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">private static void addJarFilesToClasspath(File dir, StringBuilder classpath) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        addJarFilesToClasspath(file, classpath);
+                    } else if (file.getName().endsWith(".jar")) {
+                        classpath.append(file.getAbsolutePath()).append(File.pathSeparator);
+                    }
+                }
+            }
+        }</pre>
+    </div>
+
+    <h2>Метод  <code>MinecraftVersion</code>Этот метод рекурсивно добавляет все JAR-файлы из указанной директории в classpath.</h2>
+    <h2>Параметры</h2>
+    <ul>
+    <li>String id — идентификатор версии Minecraft, например, "1.16.5".</li>
+    <li>String url — URL-адрес, по которому можно загрузить данные о версии.</li>
+</ul>
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">static class MinecraftVersion {
+            String id;
+            String url;
+    
+            public MinecraftVersion(String id, String url) {
+                this.id = id;
+                this.url = url;
+            }
+        }</pre>
+    </div>
+
+
+    <h2 id="full_code">Полный код</h2>
+    <div class="code-block">
+        <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+        <pre id="code4">package org.example;
+
+            import com.google.gson.Gson;
+            import com.google.gson.JsonArray;
+            import com.google.gson.JsonObject;
+            import com.google.gson.stream.JsonReader;
+            import javax.swing.*;
+            import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+            import java.awt.*;
+            import java.awt.event.ActionEvent;
+            import java.awt.event.ActionListener;
+            import java.io.*;
+            import java.net.URL;
+            import java.nio.charset.StandardCharsets;
+            import java.util.ArrayList;
+            import java.util.List;
+            import java.util.Scanner;
+            import java.util.zip.ZipEntry;
+            import java.util.zip.ZipInputStream;
+            
+            public class MinecraftLauncher extends JFrame {
+                private static final String BASE_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+                private static final String JAVA_DOWNLOAD_URL = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21+35/OpenJDK21U-jdk_x64_windows_hotspot_21_35.zip";
+                private static final String MINECRAFT_PATH = System.getProperty("user.home") + "\\AppData\\Roaming\\.mine";
+                private static final String JAVA_PATH = MINECRAFT_PATH + "\\java";
+            
+                private JComboBox<String> versionComboBox;
+                private JButton launchButton;
+                private List<MinecraftLauncher.MinecraftVersion> versions;
+            
+                public MinecraftLauncher() {
+                    // Применяем стиль Nimbus для более современного вида
+                    try {
+                        UIManager.setLookAndFeel(new NimbusLookAndFeel());
+                    } catch (UnsupportedLookAndFeelException e) {
+                        e.printStackTrace();
+                    }
+            
+                    setTitle("Minecraft Launcher");
+                    setSize(450, 250);
+                    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    setLocationRelativeTo(null);
+                    setLayout(new BorderLayout());
+            
+                    // Основная панель
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new GridBagLayout());
+                    panel.setBackground(new Color(60, 63, 65)); // Темный фон
+            
+                    GridBagConstraints gbc = new GridBagConstraints();
+                    gbc.insets = new Insets(10, 10, 10, 10);
+            
+                    // Заголовок
+                    JLabel titleLabel = new JLabel("Select Minecraft Version");
+                    titleLabel.setForeground(new Color(187, 187, 188));
+                    titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+                    gbc.gridx = 0;
+                    gbc.gridy = 0;
+                    gbc.gridwidth = 2;
+                    panel.add(titleLabel, gbc);
+            
+                    // Комбо-бокс с версиями
+                    versionComboBox = new JComboBox<>();
+                    versionComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
+                    gbc.gridx = 0;
+                    gbc.gridy = 1;
+                    gbc.gridwidth = 2;
+                    panel.add(versionComboBox, gbc);
+            
+                    // Кнопка запуска
+                    launchButton = new JButton("Launch Minecraft");
+                    launchButton.setFont(new Font("Arial", Font.BOLD, 14));
+                    launchButton.setBackground(new Color(39, 174, 96));
+                    launchButton.setForeground(Color.WHITE);
+                    launchButton.setFocusPainted(false);
+                    gbc.gridx = 0;
+                    gbc.gridy = 2;
+                    gbc.gridwidth = 2;
+                    panel.add(launchButton, gbc);
+            
+                    add(panel, BorderLayout.CENTER);
+            
+                    loadVersions();
+                    setListeners();
+                }
+            
+                private void loadVersions() {
+                    try {
+                        versions = fetchMinecraftVersions();
+                        for (MinecraftVersion version : versions) {
+                            versionComboBox.addItem(version.id);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Failed to load versions", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            
+                private void setListeners() {
+                    launchButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            int selectedIndex = versionComboBox.getSelectedIndex();
+                            if (selectedIndex >= 0) {
+                                MinecraftVersion selectedVersion = versions.get(selectedIndex);
+                                try {
+                                    downloadAndInstallVersion(selectedVersion);
+                                    launchMinecraft(selectedVersion);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                    JOptionPane.showMessageDialog(MinecraftLauncher.this, "Failed to launch Minecraft", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                            } else {
+                                JOptionPane.showMessageDialog(MinecraftLauncher.this, "Please select a version", "Warning", JOptionPane.WARNING_MESSAGE);
+                            }
+                        }
+                    });
+                }
+            
+                public static void main(String[] args) {
+                    SwingUtilities.invokeLater(() -> {
+                        MinecraftLauncher launcherUI = new MinecraftLauncher();
+                        launcherUI.setVisible(true);
+                    });
+            
+                    try {
+                        ensureJavaInstalled();
+            
+                        List<MinecraftVersion> versions = fetchMinecraftVersions();
+                        if (versions.isEmpty()) {
+                            System.out.println("Не удалось получить список версий.");
+                            return;
+                        }
+            
+                        System.out.println("Доступные версии Minecraft:");
+                        for (int i = 0; i < versions.size(); i++) {
+                            System.out.println((i + 1) + ": " + versions.get(i).id);
+                        }
+            
+                        System.out.print("Введите номер версии для установки и запуска: ");
+                        Scanner scanner = new Scanner(System.in);
+                        int versionIndex = scanner.nextInt() - 1;
+            
+                        if (versionIndex < 0 || versionIndex >= versions.size()) {
+                            System.out.println("Неверный номер версии.");
+                            return;
+                        }
+            
+                        MinecraftVersion selectedVersion = versions.get(versionIndex);
+                        System.out.println("Вы выбрали версию: " + selectedVersion.id);
+            
+                        downloadAndInstallVersion(selectedVersion);
+                        launchMinecraft(selectedVersion);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            
+                private static void ensureJavaInstalled() throws IOException {
+                    File javaDir = new File(JAVA_PATH);
+                    if (!javaDir.exists()) {
+                        javaDir.mkdirs();
+                        System.out.println("Скачиваем и устанавливаем нужную версию Java...");
+            
+                        File javaZip = new File(JAVA_PATH + "\\java.zip");
+                        downloadFileWithProgress(JAVA_DOWNLOAD_URL, javaZip);
+            
+                        unzip(javaZip.getAbsolutePath(), JAVA_PATH);
+                        javaZip.delete(); // Удаляем zip-файл после распаковки
+            
+                        System.out.println("Java успешно установлена.");
+                    }
+                }
+            
+                private static List<MinecraftVersion> fetchMinecraftVersions() throws IOException {
+                    List<MinecraftVersion> versions = new ArrayList<>();
+                    try (InputStream input = new URL(BASE_URL).openStream();
+                         InputStreamReader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
+                         JsonReader jsonReader = new JsonReader(reader)) {
+            
+                        Gson gson = new Gson();
+                        JsonObject jsonObject = gson.fromJson(jsonReader, JsonObject.class);
+                        JsonArray versionsArray = jsonObject.getAsJsonArray("versions");
+            
+                        for (int i = 0; i < versionsArray.size(); i++) {
+                            JsonObject versionObject = versionsArray.get(i).getAsJsonObject();
+                            String id = versionObject.get("id").getAsString();
+                            String url = versionObject.get("url").getAsString();
+                            versions.add(new MinecraftVersion(id, url));
+                        }
+                    }
+            
+                    return versions;
+                }
+            
+                private static void downloadAndInstallVersion(MinecraftVersion version) throws IOException {
+                    String versionPath = MINECRAFT_PATH + "\\versions\\" + version.id;
+                    File versionDir = new File(versionPath);
+                    if (!versionDir.exists()) {
+                        versionDir.mkdirs();
+                    }
+            
+                    String versionJsonPath = versionPath + "\\" + version.id + ".json";
+                    File versionJsonFile = new File(versionJsonPath);
+                    if (!versionJsonFile.exists()) {
+                        downloadFileWithProgress(version.url, versionJsonFile);
+                    }
+            
+                    JsonObject versionJson;
+                    try (Reader reader = new FileReader(versionJsonFile)) {
+                        Gson gson = new Gson();
+                        versionJson = gson.fromJson(reader, JsonObject.class);
+                    }
+            
+                    JsonObject downloads = versionJson.getAsJsonObject("downloads");
+                    JsonObject client = downloads.getAsJsonObject("client");
+                    if (client != null) {
+                        String clientUrl = client.get("url").getAsString();
+                        String clientPath = versionPath + "\\" + version.id + ".jar";
+                        File clientJarFile = new File(clientPath);
+                        if (!clientJarFile.exists()) {
+                            downloadFileWithProgress(clientUrl, clientJarFile);
+                        }
+                    }
+            
+                    JsonArray libraries = versionJson.getAsJsonArray("libraries");
+                    String librariesPath = versionPath + "\\libraries"; // Папка libraries теперь уникальна для каждой версии
+                    for (int i = 0; i < libraries.size(); i++) {
+                        JsonObject library = libraries.get(i).getAsJsonObject();
+                        JsonObject downloadsObject = library.getAsJsonObject("downloads");
+                        if (downloadsObject != null) {
+                            if (downloadsObject.has("artifact")) {
+                                JsonObject artifact = downloadsObject.getAsJsonObject("artifact");
+                                String libraryUrl = artifact.get("url").getAsString();
+                                String libraryFilePath = librariesPath + "\\" + artifact.get("path").getAsString();
+                                File libraryFile = new File(libraryFilePath);
+                                if (!libraryFile.exists()) {
+                                    downloadFileWithProgress(libraryUrl, libraryFile);
+                                }
+                            }
+            
+                            if (downloadsObject.has("classifiers")) {
+                                JsonObject classifiers = downloadsObject.getAsJsonObject("classifiers");
+                                if (classifiers.has("natives-windows")) {
+                                    String nativesClassifier = classifiers.get("natives-windows").getAsJsonObject().get("url").getAsString();
+                                    String nativeFileName = nativesClassifier.substring(nativesClassifier.lastIndexOf('/') + 1);
+                                    String nativesPath = versionPath + "\\natives\\" + nativeFileName;
+                                    File nativesFile = new File(nativesPath);
+                                    if (!nativesFile.exists()) {
+                                        downloadFileWithProgress(nativesClassifier, nativesFile);
+                                        unzip(nativesFile.getAbsolutePath(), versionPath + "\\natives");
+                                    }
+                                }
+                            }
+                        }
+                    }
+            
+                    System.out.println("Версия " + version.id + " успешно установлена.");
+                }
+            
+            
+                private static void downloadFileWithProgress(String fileURL, File destination) throws IOException {
+                    // Проверяем и создаем необходимые директории
+                    File parentDir = destination.getParentFile();
+                    if (parentDir != null && !parentDir.exists()) {
+                        parentDir.mkdirs(); // Создаем все необходимые директории
+                    }
+            
+                    URL url = new URL(fileURL);
+                    try (InputStream inputStream = url.openStream();
+                         FileOutputStream outputStream = new FileOutputStream(destination)) {
+            
+                        byte[] buffer = new byte[4096];
+                        long totalBytesRead = 0;
+                        int bytesRead;
+                        long fileSize = url.openConnection().getContentLengthLong();
+                        int lastPercent = 0;
+            
+                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
+                            int percentCompleted = (int) ((totalBytesRead * 100) / fileSize);
+                            if (percentCompleted != lastPercent) {
+                                System.out.print("\rСкачивание: " + percentCompleted + "%");
+                                lastPercent = percentCompleted;
+                            }
+                        }
+                        System.out.println(); // Переход на новую строку после завершения загрузки
+                    }
+                }
+            
+                private static void unzip(String zipFilePath, String destDir) throws IOException {
+                    File dir = new File(destDir);
+                    if (!dir.exists()) dir.mkdirs();
+            
+                    long totalFiles = 0;
+                    long filesProcessed = 0;
+            
+                    try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+                        ZipEntry entry = zipIn.getNextEntry();
+                        while (entry != null) {
+                            if (!entry.isDirectory()) {
+                                totalFiles++;
+                            }
+                            zipIn.closeEntry();
+                            entry = zipIn.getNextEntry();
+                        }
+                    }
+            
+                    try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+                        ZipEntry entry = zipIn.getNextEntry();
+                        while (entry != null) {
+                            String filePath = destDir + File.separator + entry.getName();
+                            if (!entry.isDirectory()) {
+                                extractFile(zipIn, filePath);
+                                filesProcessed++;
+                                int percentCompleted = (int) ((filesProcessed * 100) / totalFiles);
+                                System.out.print("\rРаспаковка: " + percentCompleted + "%");
+                            } else {
+                                File dirEntry = new File(filePath);
+                                dirEntry.mkdirs();
+                            }
+                            zipIn.closeEntry();
+                            entry = zipIn.getNextEntry();
+                        }
+                        System.out.println(); // Переход на новую строку после завершения распаковки
+                    }
+                }
+            
+                private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+                    try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+                        byte[] bytesIn = new byte[4096];
+                        int read;
+                        while ((read = zipIn.read(bytesIn)) != -1) {
+                            bos.write(bytesIn, 0, read);
+                        }
+                    }
+                }
+            
+                private static void launchMinecraft(MinecraftVersion version) throws IOException {
+                    String versionPath = MINECRAFT_PATH + "\\versions\\" + version.id;
+                    String javaExecutable = JAVA_PATH + "\\jdk-21+35\\bin\\java.exe"; // Путь к Java
+            
+                    // Проверка существования файла java.exe
+                    File javaFile = new File(javaExecutable);
+                    if (!javaFile.exists() || !javaFile.isFile()) {
+                        System.out.println("Java executable not found at: " + javaExecutable);
+                        return;
+                    }
+            
+                    // Сборка classpath: добавляем все .jar из папки libraries и версии
+                    StringBuilder classpath = new StringBuilder();
+                    File librariesDir = new File(versionPath + "\\libraries");
+                    if (librariesDir.exists() && librariesDir.isDirectory()) {
+                        // Рекурсивно добавляем все jar-файлы из библиотек
+                        addJarFilesToClasspath(librariesDir, classpath);
+                    }
+            
+                    // Добавляем jar файл самой версии Minecraft
+                    classpath.append(File.pathSeparator).append(versionPath).append("\\").append(version.id).append(".jar");
+            
+                    System.out.println("Запуск Minecraft...");
+            
+                    List<String> command = new ArrayList<>();
+                    command.add(javaExecutable);
+                    command.add("-cp");
+                    command.add(classpath.toString());
+                    command.add("-Djava.library.path=" + versionPath + "\\natives");
+                    command.add("net.minecraft.client.main.Main");
+                    command.add("--username");
+                    command.add("MailoDesx");
+                    command.add("--version");
+                    command.add(version.id);
+                    command.add("--gameDir");
+                    command.add(MINECRAFT_PATH);
+                    command.add("--assetsDir");
+                    command.add(MINECRAFT_PATH + "\\assets");
+                    command.add("--assetIndex");
+                    command.add(version.id);
+                    command.add("--uuid");
+                    command.add("1234567890abcdef1234567890abcdef");
+                    command.add("--accessToken");
+                    command.add("access_token");
+                    command.add("--userProperties");
+                    command.add("{}");
+            
+                    ProcessBuilder processBuilder = new ProcessBuilder(command);
+                    processBuilder.redirectErrorStream(true);
+            
+                    // Запуск процесса
+                    Process process = processBuilder.start();
+                    System.out.println("Minecraft запущен!");
+            
+                    // Чтение вывода процесса
+                    new Thread(() -> {
+                        try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                System.out.println(line);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+            
+            
+                private static void addJarFilesToClasspath(File dir, StringBuilder classpath) {
+                    File[] files = dir.listFiles();
+                    if (files != null) {
+                        for (File file : files) {
+                            if (file.isDirectory()) {
+                                addJarFilesToClasspath(file, classpath);
+                            } else if (file.getName().endsWith(".jar")) {
+                                classpath.append(file.getAbsolutePath()).append(File.pathSeparator);
+                            }
+                        }
+                    }
+                }
+            
+            
+            
+                static class MinecraftVersion {
+                    String id;
+                    String url;
+            
+                    public MinecraftVersion(String id, String url) {
+                        this.id = id;
+                        this.url = url;
+                    }
+                }
+            }
+            }</pre>
+    </div>
+
+        <h2 id="build">Код build.gradle</h2>
+        <div class="code-block">
+            <button class="copy-button" onclick="copyToClipboard('#code4')">Копировать</button>
+            <pre id="code4">plugins {
+    id 'java'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
+    implementation 'org.slf4j:slf4j-api:2.0.7'
+
+}
+
+javafx {
+    version = "21"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+}</pre>
+        </div>
+        <h2 id="conclusion">Заключение</h2>
+        <p>Этот код предоставляет основу для создания собственного лаунчера Minecraft с использованием Java и Swing. Вы можете адаптировать и улучшить его в зависимости от ваших потребностей, добавив новые функции или изменив интерфейс.</p>
+
+    </div>
+    <script>
+        function copyToClipboard(elementId) {
+            var text = document.querySelector(elementId).innerText;
+            navigator.clipboard.writeText(text).then(function() {
+                
+            }, function(err) {
+               
+            });
+        }
+    </script>
+</body>
+</html>
